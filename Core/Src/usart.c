@@ -218,8 +218,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		RxBuffer[Uart1_Rx_Cnt++] = aRxBuffer;  
 		if((RxBuffer[Uart1_Rx_Cnt-1] == 0x0A)&&(RxBuffer[Uart1_Rx_Cnt-2] == 0x0D))  //判断结束位
 		{
-			HAL_UART_Transmit(&huart1, (uint8_t *)&RxBuffer, Uart1_Rx_Cnt, 0xFFFF);   //将收到的信息发送出去
-      while(HAL_UART_GetState(&huart1) == HAL_UART_STATE_BUSY_TX);              //检测UART发送结束
+			// HAL_UART_Transmit(&huart1, (uint8_t *)&RxBuffer, Uart1_Rx_Cnt, 0xFFFF);   //将收到的信息发送出去
+      // while(HAL_UART_GetState(&huart1) == HAL_UART_STATE_BUSY_TX);              //检测UART发送结束
       
       // 解析字符串 "trig-DLP|cnt-12|hd-100|ld-100|id-0"
       char *tokens[MAX_TOKENS];
@@ -232,10 +232,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
           values[i] = (char *)malloc(10);
           extract_value(tokens[i], values[i]);
         }
-        HAL_UART_Transmit(&huart1, (uint8_t *)values[1], strlen(values[1]), 0xffff);
-        HAL_UART_Transmit(&huart1, (uint8_t *)values[2], strlen(values[2]), 0xffff);
-        HAL_UART_Transmit(&huart1, (uint8_t *)values[3], strlen(values[3]), 0xffff);
-        HAL_UART_Transmit(&huart1, (uint8_t *)values[4], strlen(values[4]), 0xffff);
+        // HAL_UART_Transmit(&huart1, (uint8_t *)values[1], strlen(values[1]), 0xffff);
+        // HAL_UART_Transmit(&huart1, (uint8_t *)values[2], strlen(values[2]), 0xffff);
+        // HAL_UART_Transmit(&huart1, (uint8_t *)values[3], strlen(values[3]), 0xffff);
+        // HAL_UART_Transmit(&huart1, (uint8_t *)values[4], strlen(values[4]), 0xffff);
         int cnt = atoi(values[1]);
         int hd = atoi(values[2]);
         int ld = atoi(values[3]);
@@ -243,30 +243,30 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         if (strcmp(values[0], "DLP") == 0) {
           enable_indicator_light();
           play_dlp_trigger(cnt, hd, ld);
-          char *err = "Trig DLP Success!";
+          char *err = "Trig DLP Success!\r\n";
           HAL_UART_Transmit(&huart1, (uint8_t *)err, strlen(err), 0xffff);
           disable_indicator_light();
         }
         else if (strcmp(values[0], "LED") == 0)
         {
           if (id < 1 || id > 32) {
-            char *err = "Invalid LED ID!";
+            char *err = "Invalid LED ID!\r\n";
             HAL_UART_Transmit(&huart1, (uint8_t *)err, strlen(err), 0xffff);
           } else {
             enable_indicator_light();
             play_led_trigger(cnt, hd, id);
-            char *err = "Trig LED Success!";
+            char *err = "Trig LED Success!\r\n";
             HAL_UART_Transmit(&huart1, (uint8_t *)err, strlen(err), 0xffff);
             disable_indicator_light();
           }
         }else{
-          char *err = "Invalid command!";
+          char *err = "Invalid command!\r\n";
           HAL_UART_Transmit(&huart1, (uint8_t *)err, strlen(err), 0xffff);
         }
         
       } else {
         // 处理错误情况
-        char *err = "Invalid format!";
+        char *err = "Invalid format!\r\n";
         HAL_UART_Transmit(&huart1, (uint8_t *)err, strlen(err), 0xffff);
       }
       Uart1_Rx_Cnt = 0;
