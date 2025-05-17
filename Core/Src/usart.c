@@ -149,15 +149,14 @@ void extract_value(char *input, char *output) {
 }
 
 void enable_led_encoder() {
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
-}
-
-void disable_led_encoder() {
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
 }
 
+void disable_led_encoder() {
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+}
+
 void play_dlp_trigger(int cnt, int hd, int ld) {
-  disable_led_encoder();
   for (int i = 0; i < cnt; i++) {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);   // trig dlp
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);  // trig cam
@@ -185,9 +184,7 @@ void set_led_state(int id) {
 
 void play_led_trigger(int cnt, int hd, int id) {
   set_led_state(id);
-  enable_led_encoder();
   HAL_Delay(hd);
-  disable_led_encoder();
 }
 
 void enable_indicator_light(){
@@ -242,6 +239,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         int id = atoi(values[4]);
         if (strcmp(values[0], "DLP") == 0) {
           enable_indicator_light();
+          disable_led_encoder();
           play_dlp_trigger(cnt, hd, ld);
           char *err = "Trig DLP Success!\r\n";
           HAL_UART_Transmit(&huart1, (uint8_t *)err, strlen(err), 0xffff);
@@ -254,9 +252,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
             HAL_UART_Transmit(&huart1, (uint8_t *)err, strlen(err), 0xffff);
           } else {
             enable_indicator_light();
+            enable_led_encoder();
             play_led_trigger(cnt, hd, id);
             char *err = "Trig LED Success!\r\n";
             HAL_UART_Transmit(&huart1, (uint8_t *)err, strlen(err), 0xffff);
+            disable_led_encoder();
             disable_indicator_light();
           }
         }else{
